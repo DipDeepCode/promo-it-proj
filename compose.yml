@@ -1,0 +1,91 @@
+version: "3.8"
+
+services:
+  api-gateway:
+    build:
+      context: /api-gateway
+      dockerfile: Dockerfile
+    image: promo-it/api-gateway
+    container_name: api-gateway
+    restart: always
+    ports:
+      - "8081:80"
+    depends_on:
+      - consultations-service
+      - keycloak
+    environment:
+      SERVER_PORT: 80
+      SPRING_CLOUD_GATEWAY_MVC_ROUTES[0]_ID: consultations
+      SPRING_CLOUD_GATEWAY_MVC_ROUTES[0]_URI: http://consultations-service
+      SPRING_CLOUD_GATEWAY_MVC_ROUTES[0]_PREDICATES[0]: Path= /consultations/**
+      SPRING_CLOUD_GATEWAY_MVC_ROUTES[0]_FILTERS[0]: StripPrefix=1
+      SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER-URI: http://keycloak:8080/realms/PromoIT
+
+  consultations-service:
+    build:
+      context: /consultations-service
+      dockerfile: Dockerfile
+    image: promo-it/consultations-service
+    container_name: consultations-service
+    restart: always
+    environment:
+      SERVER_PORT: 80
+      SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER-URI: http://keycloak:8080/realms/PromoIT
+      SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWK-SET-URI: http://keycloak:8080/realms/PromoIT/protocol/openid-connect/certs
+      SPRING_DATASOURCE_URL: jdbc:postgresql://consultations_dbms/consultations_db
+      SPRING_DATASOURCE_USERNAME: consultations_db_user
+      SPRING_DATASOURCE_PASSWORD: consultations_db_password
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+      SPRING_JPA_OPEN-IN-VIEW: false
+    depends_on:
+      - consultations_dbms
+      - keycloak
+
+  consultations_dbms:
+    image: postgres:16.2
+    container_name: consultations_dbms
+    environment:
+      POSTGRES_DB: consultations_db
+      POSTGRES_USER: consultations_db_user
+      POSTGRES_PASSWORD: consultations_db_password
+    ports:
+      - "5434:5432"
+    restart: unless-stopped
+    volumes:
+      - consultations_data:/var/lib/postgresql/data
+
+  keycloak:
+    image: quay.io/keycloak/keycloak:25.0.5
+    container_name: keycloak
+    command: ["start-dev"]
+    environment:
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: admin
+      KC_HOSTNAME: keycloak
+      KC_DB: postgres
+      KC_DB_URL: jdbc:postgresql://keycloak_dbms/keycloak_db
+      KC_DB_USERNAME: keycloak_db_user
+      KC_DB_PASSWORD: keycloak_db_password
+    ports:
+      - "8080:8080"
+    depends_on:
+      - keycloak_dbms
+
+  keycloak_dbms:
+    image: postgres:16.2
+    container_name: keycloak_dbms
+    environment:
+      POSTGRES_DB: keycloak_db
+      POSTGRES_USER: keycloak_db_user
+      POSTGRES_PASSWORD: keycloak_db_password
+    ports:
+      - "5433:5432"
+    restart: unless-stopped
+    volumes:
+      - keycloak_data:/var/lib/postgresql/data
+
+volumes:
+  consultations_data:
+    driver: local
+  keycloak_data:
+    driver: local
