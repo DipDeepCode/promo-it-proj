@@ -1,0 +1,6 @@
+spring:
+  application:
+    name: consultations-service
+  jpa:
+    open-in-view: false
+
