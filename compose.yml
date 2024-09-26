@@ -6,7 +6,7 @@ services:
       context: /api-gateway
       dockerfile: Dockerfile
     image: promo-it/api-gateway
-    container_name: api-gateway
+    container_name: api-gateway_container
     restart: always
     ports:
       - "8081:80"
@@ -26,66 +26,68 @@ services:
       context: /consultations-service
       dockerfile: Dockerfile
     image: promo-it/consultations-service
-    container_name: consultations-service
+    container_name: consultations-service_container
     restart: always
     environment:
       SERVER_PORT: 80
       SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER-URI: http://keycloak:8080/realms/PromoIT
       SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWK-SET-URI: http://keycloak:8080/realms/PromoIT/protocol/openid-connect/certs
-      SPRING_DATASOURCE_URL: jdbc:postgresql://consultations_dbms/consultations_db
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db/consultations_db
       SPRING_DATASOURCE_USERNAME: consultations_db_user
       SPRING_DATASOURCE_PASSWORD: consultations_db_password
       SPRING_JPA_HIBERNATE_DDL_AUTO: update
       SPRING_JPA_OPEN-IN-VIEW: false
     depends_on:
-      - consultations_dbms
+      - db
       - keycloak
-
-  consultations_dbms:
-    image: postgres:16.2
-    container_name: consultations_dbms
-    environment:
-      POSTGRES_DB: consultations_db
-      POSTGRES_USER: consultations_db_user
-      POSTGRES_PASSWORD: consultations_db_password
-    ports:
-      - "5434:5432"
-    restart: unless-stopped
-    volumes:
-      - consultations_data:/var/lib/postgresql/data
 
   keycloak:
     image: quay.io/keycloak/keycloak:25.0.5
-    container_name: keycloak
+    container_name: keycloak_container
     command: ["start-dev"]
     environment:
-      KEYCLOAK_ADMIN: admin
-      KEYCLOAK_ADMIN_PASSWORD: admin
+      KEYCLOAK_ADMIN: keycloak_user
+      KEYCLOAK_ADMIN_PASSWORD: keycloak_pass
       KC_HOSTNAME: keycloak
       KC_DB: postgres
-      KC_DB_URL: jdbc:postgresql://keycloak_dbms/keycloak_db
+      KC_DB_URL: jdbc:postgresql://db/keycloak_db
       KC_DB_USERNAME: keycloak_db_user
       KC_DB_PASSWORD: keycloak_db_password
     ports:
       - "8080:8080"
     depends_on:
-      - keycloak_dbms
+      - db
 
-  keycloak_dbms:
-    image: postgres:16.2
-    container_name: keycloak_dbms
+  pgadmin:
+    image: elestio/pgadmin
+    container_name: pgadmin_container
+    restart: always
     environment:
-      POSTGRES_DB: keycloak_db
-      POSTGRES_USER: keycloak_db_user
-      POSTGRES_PASSWORD: keycloak_db_password
+      PGADMIN_DEFAULT_EMAIL: pgadmin_user@foo.bar
+      PGADMIN_DEFAULT_PASSWORD: pgadmin_pass
+      PGADMIN_LISTEN_PORT: 8080
     ports:
-      - "5433:5432"
-    restart: unless-stopped
+      - "8082:8080"
     volumes:
-      - keycloak_data:/var/lib/postgresql/data
+      - ./servers.json:/pgadmin4/servers.json
+      - pgadmin_data:/var/lib/pgadmin
+    depends_on:
+      - db
+
+  db:
+    image: postgres:16.2-alpine
+    container_name: db_container
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres_pass
+      POSTGRES_MULTIPLE_DATABASES: keycloak_db:keycloak_db_user:keycloak_db_password,consultations_db:consultations_db_user:consultations_db_password
+    volumes:
+      - ./init-multi-postgres-databases.sh:/docker-entrypoint-initdb.d/init-multi-postgres-databases.sh
+      - db_data:/var/lib/postgresql/data
 
 volumes:
-  consultations_data:
+  db_data:
     driver: local
-  keycloak_data:
+  pgadmin_data:
     driver: local
