@@ -11,7 +11,6 @@ import ru.ddc.consultationsservice.controller.payload.CreateSlotRequest;
 import ru.ddc.consultationsservice.controller.payload.SlotDto;
 import ru.ddc.consultationsservice.entity.Slot;
 import ru.ddc.consultationsservice.repository.SlotRepository;
-import ru.ddc.consultationsservice.util.AuthorizationUtil;
 
 import java.time.LocalDateTime;
 
@@ -27,10 +26,12 @@ public class SlotService {
 
     @Transactional
     public SlotDto create(@Valid CreateSlotRequest request) {
+        System.out.println(request);
         Slot slot = modelMapper.map(request, Slot.class);
-        slot.setCreatedBy(getCurrentUserSubjectId());
-        slot.setCreatedAt(LocalDateTime.now());
-        slot = slotRepository.save(slot);
-        return modelMapper.map(slot, SlotDto.class);
+//        slot.setCreatedBy(getCurrentUserSubjectId());
+//        slot.setCreatedAt(LocalDateTime.now());
+//        System.out.println(slot);
+//        slot = slotRepository.save(slot);
+        return null;//modelMapper.map(slot, SlotDto.class);
     }
 }
