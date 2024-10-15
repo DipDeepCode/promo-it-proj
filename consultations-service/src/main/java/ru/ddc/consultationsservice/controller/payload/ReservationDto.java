@@ -13,11 +13,9 @@ import java.util.UUID;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class SlotDto extends RepresentationModel<SlotDto> {
+public class ReservationDto extends RepresentationModel<ReservationDto> {
     private Long id;
-    private UUID specialistId;
-    private LocalDateTime beginAt;
-    private LocalDateTime endAt;
+    private UUID clientId;
     private String status;
     private LocalDateTime createdAt;
     private UUID createdBy;

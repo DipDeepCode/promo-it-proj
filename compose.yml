@@ -15,9 +15,9 @@ services:
       - keycloak
     environment:
       SERVER_PORT: 80
-      SPRING_CLOUD_GATEWAY_MVC_ROUTES[0]_ID: consultations
+      SPRING_CLOUD_GATEWAY_MVC_ROUTES[0]_ID: consultations-service
       SPRING_CLOUD_GATEWAY_MVC_ROUTES[0]_URI: http://consultations-service
-      SPRING_CLOUD_GATEWAY_MVC_ROUTES[0]_PREDICATES[0]: Path= /consultations/**
+      SPRING_CLOUD_GATEWAY_MVC_ROUTES[0]_PREDICATES[0]: Path= /consultations-service/**
       SPRING_CLOUD_GATEWAY_MVC_ROUTES[0]_FILTERS[0]: StripPrefix=1
       SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER-URI: http://keycloak:8080/realms/PromoIT
 
@@ -31,7 +31,6 @@ services:
     environment:
       SERVER_PORT: 80
       SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER-URI: http://keycloak:8080/realms/PromoIT
-      SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWK-SET-URI: http://keycloak:8080/realms/PromoIT/protocol/openid-connect/certs
       SPRING_DATASOURCE_URL: jdbc:postgresql://db/consultations_db
       SPRING_DATASOURCE_USERNAME: consultations_db_user
       SPRING_DATASOURCE_PASSWORD: consultations_db_password
@@ -49,7 +48,6 @@ services:
       KEYCLOAK_ADMIN: keycloak_user
       KEYCLOAK_ADMIN_PASSWORD: keycloak_pass
       KC_HOSTNAME: keycloak
-#      HOSTNAME_BACKCHANNEL_DYNAMIC: true
       KC_DB: postgres
       KC_DB_URL: jdbc:postgresql://db/keycloak_db
       KC_DB_USERNAME: keycloak_db_user

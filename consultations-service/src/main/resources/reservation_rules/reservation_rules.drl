@@ -1,0 +1,69 @@
+package reservation_rules
+
+import ru.ddc.consultationsservice.entity.Slot
+import ru.ddc.consultationsservice.entity.Reservation
+import ru.ddc.consultationsservice.rules.RuleResponse
+
+global ru.ddc.consultationsservice.rules.RuleResponse response
+
+dialect "mvel"
+
+rule "Allow create Reservation" agenda-group "create"
+    when
+        Slot (status.equals(Slot.Status.OPEN))
+    then
+        response.setAllowed(true);
+    end
+
+rule "Prohibit create Reservation" agenda-group "create"
+    when
+        Slot (status.equals(Slot.Status.CLOSED))
+    then
+        response.setAllowed(false);
+        response.setReason("Slot should be in OPEN status");
+    end
+
+rule "Allow update Reservation" agenda-group "update"
+    when
+        Slot (status.equals(Slot.Status.OPEN)) and Reservation (!status.equals(Reservation.Status.NEW))
+    then
+        response.setAllowed(true);
+    end
+
+rule "Prohibit update Reservation to NEW status" agenda-group "update"
+    when
+        Reservation (status.equals(Reservation.Status.NEW))
+    then
+        response.setAllowed(false);
+        response.setReason("Reservation can not be returned to a NEW status");
+    end
+
+rule "Prohibit update Reservation if Slot is closed" agenda-group "update"
+    when
+        Slot (status.equals(Slot.Status.CLOSED))
+    then
+        response.setAllowed(false);
+        response.setReason("Slot should be in OPEN status");
+    end
+
+rule "Allow delete if Reservation in NEW status" agenda-group "delete"
+    when
+        Reservation (status.equals(Reservation.Status.NEW))
+    then
+        response.setAllowed(true);
+    end
+
+rule "Allow delete if Reservation in REJECTED status" agenda-group "delete"
+    when
+        Reservation (status.equals(Reservation.Status.REJECTED))
+    then
+        response.setAllowed(true);
+    end
+
+rule "Prohibit delete if Reservation in APPROVED" agenda-group "delete"
+    when
+        Reservation (status.equals(Reservation.Status.APPROVED))
+    then
+        response.setAllowed(false);
+        response.setReason("Reservation should not be in APPROVED status");
+    end

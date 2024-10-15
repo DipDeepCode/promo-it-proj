@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<kmodule xmlns="http://www.drools.org/xsd/kmodule">
+    <kbase name="slots" packages="slot_rules">
+        <ksession name="slotsSession"/>
+    </kbase>
+    <kbase name="reservations" packages="reservation_rules">
+        <ksession name="reservationsSession"/>
+    </kbase>
+</kmodule>
