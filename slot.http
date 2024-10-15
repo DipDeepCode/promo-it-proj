@@ -26,7 +26,12 @@ Content-Type: application/json
 {
   "specialistId": "2dd35279-514f-47cc-9a28-11e44f165acf",
   "beginAt": "2024-10-30T12:00:00",
-  "endAt": "2024-10-30T13:00:00"
+  "endAt": "2024-10-30T13:00:00",
+  "cost": 0.00,
+  "type": "type name",
+  "context": {
+    "key": "value"
+  }
 }
 
 ###

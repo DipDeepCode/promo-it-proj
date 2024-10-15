@@ -6,7 +6,9 @@ import lombok.Data;
 import ru.ddc.consultationsservice.validation.DateTwoIsAfterDateOne;
 import ru.ddc.consultationsservice.validation.SlotsDatesNotOverlap;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.Map;
 import java.util.UUID;
 
 @Data
@@ -24,4 +26,9 @@ public class CreateSlotRequest {
     @NotNull
     @Future
     private LocalDateTime endAt;
+
+    @NotNull
+    private BigDecimal cost;
+
+    private Map<String, String> context;
 }
