@@ -1,5 +1,12 @@
 package ru.ddc.consultationsservice.controller;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.hateoas.CollectionModel;
 import org.springframework.http.HttpStatus;
@@ -18,16 +25,30 @@ import java.util.UUID;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
+@Tag(name = "SlotController", description = "REST controller for Slot")
 @RestController
 @RequestMapping("/api/v1")
 @RequiredArgsConstructor
 public class SlotController {
     private final SlotService slotService;
 
+    @Operation(summary = "Create Slot")
+    @ApiResponses({
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Slot created",
+                    content = @Content(schema = @Schema(implementation = SlotDto.class))),
+            @ApiResponse(
+                    responseCode = "401",
+                    description = "Permission denied",
+                    content = @Content())
+    })
     @PreAuthorize("hasAnyRole('ROLE_SPECIALIST', 'ROLE_MODERATOR')")
     @PostMapping(value = "/slots", produces = "application/hal+json")
     @ResponseStatus(HttpStatus.CREATED)
-    public ResponseEntity<?> create(@RequestBody CreateSlotRequest request) {
+    public ResponseEntity<?> create(
+            @Parameter(description = "Request to create a slot")
+            @RequestBody CreateSlotRequest request) {
         SlotDto slotDto = slotService.create(request);
         slotDto.add(linkTo(methodOn(SlotController.class).getById(slotDto.getId())).withSelfRel());
         slotDto.add(linkTo(methodOn(ReservationController.class).getSlotReservation(slotDto.getId())).withRel("reservations"));

@@ -34,7 +34,9 @@ public class SecurityConfig {
                                            Converter<Jwt, ? extends AbstractAuthenticationToken> jwtConverter) throws Exception {
         return http
                 .csrf(withDefaults())
-                .authorizeHttpRequests(request -> request.anyRequest().authenticated())
+                .authorizeHttpRequests(request -> request
+                        .requestMatchers("/swagger-ui/**", "/swagger-ui.html", "/v3/api-docs/**").permitAll()
+                        .anyRequest().authenticated())
                 .sessionManagement(session -> session.sessionCreationPolicy(STATELESS))
                 .oauth2ResourceServer(oauth2 -> oauth2
                         .jwt(jwt -> jwt.jwtAuthenticationConverter(jwtConverter)))
