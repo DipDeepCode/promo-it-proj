@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.hateoas.CollectionModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import ru.ddc.consultationsservice.controller.payload.CreateSlotRequest;
 import ru.ddc.consultationsservice.controller.payload.SlotCriteria;
@@ -23,6 +24,7 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 public class SlotController {
     private final SlotService slotService;
 
+    @PreAuthorize("hasAnyRole('ROLE_SPECIALIST', 'ROLE_MODERATOR')")
     @PostMapping(value = "/slots", produces = "application/hal+json")
     @ResponseStatus(HttpStatus.CREATED)
     public ResponseEntity<?> create(@RequestBody CreateSlotRequest request) {
@@ -32,6 +34,7 @@ public class SlotController {
         return ResponseEntity.status(HttpStatus.CREATED).body(slotDto);
     }
 
+    @PreAuthorize("hasRole('ROLE_MODERATOR')")
     @GetMapping(value = "/slots", produces = "application/hal+json")
     public ResponseEntity<?> getAll(SlotCriteria criteria) {
         List<SlotDto> slotDtoList = slotService.getAll(criteria);
@@ -44,6 +47,7 @@ public class SlotController {
         return ResponseEntity.ok(collectionModel);
     }
 
+    @PreAuthorize("hasAnyRole('ROLE_CUSTOMER', 'ROLE_SPECIALIST', 'ROLE_MODERATOR')")
     @GetMapping(value = "/specialist/{id}/slots", produces = "application/hal+json")
     public ResponseEntity<?> getSpecialistSlots(@PathVariable UUID id,
                                                 SlotCriteria criteria) {
@@ -57,6 +61,7 @@ public class SlotController {
         return ResponseEntity.ok(collectionModel);
     }
 
+    @PreAuthorize("hasAnyRole('ROLE_CUSTOMER', 'ROLE_SPECIALIST', 'ROLE_MODERATOR')")
     @GetMapping(value = "/slots/{id}", produces = "application/hal+json")
     public ResponseEntity<?> getById(@PathVariable Long id) {
         SlotDto slotDto = slotService.getById(id);
@@ -65,6 +70,7 @@ public class SlotController {
         return ResponseEntity.ok(slotDto);
     }
 
+    @PreAuthorize("hasAnyRole('ROLE_SPECIALIST', 'ROLE_MODERATOR')")
     @PutMapping(value = "/slots/{id}", produces = "application/hal+json")
     public ResponseEntity<?> update(@PathVariable Long id,
                                     @RequestBody UpdateSlotRequest request) {
@@ -74,6 +80,7 @@ public class SlotController {
         return ResponseEntity.ok(slotDto);
     }
 
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     @DeleteMapping("/slots/{id}")
     public ResponseEntity<?> delete(@PathVariable Long id) {
         slotService.delete(id);

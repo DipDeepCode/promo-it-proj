@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.hateoas.CollectionModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import ru.ddc.consultationsservice.controller.payload.ReservationDto;
 import ru.ddc.consultationsservice.controller.payload.CreateReservationRequest;
@@ -21,6 +22,7 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 public class ReservationController {
     private final ReservationService reservationService;
 
+    @PreAuthorize("hasAnyRole('ROLE_CUSTOMER', 'ROLE_MODERATOR')")
     @PostMapping("slots/{slotId}/reservations")
     public ResponseEntity<?> create(@PathVariable Long slotId, @RequestBody CreateReservationRequest request) {
         ReservationDto reservationDto = reservationService.create(slotId, request);
@@ -28,6 +30,7 @@ public class ReservationController {
         return ResponseEntity.status(HttpStatus.CREATED).body(reservationDto);
     }
 
+    @PreAuthorize("hasRole('ROLE_MODERATOR')")
     @GetMapping("/reservations")
     public ResponseEntity<?> getAll() {
         List<ReservationDto> reservationDtoList = reservationService.getAll();
@@ -40,6 +43,7 @@ public class ReservationController {
         return ResponseEntity.ok(collectionModel);
     }
 
+    @PreAuthorize("hasAnyRole('ROLE_SPECIALIST', 'ROLE_MODERATOR')")
     @GetMapping("/slots/{slotId}/reservations")
     public ResponseEntity<?> getSlotReservation(@PathVariable Long slotId) {
         List<ReservationDto> reservationDtoList = reservationService.getBySlotId(slotId);
@@ -52,6 +56,7 @@ public class ReservationController {
         return ResponseEntity.ok(collectionModel);
     }
 
+    @PreAuthorize("hasAnyRole('ROLE_CUSTOMER', 'ROLE_SPECIALIST', 'ROLE_MODERATOR')")
     @GetMapping("/reservations/{id}")
     public ResponseEntity<?> getById(@PathVariable Long id) {
         ReservationDto reservationDto = reservationService.getById(id);
@@ -59,6 +64,7 @@ public class ReservationController {
         return ResponseEntity.ok(reservationDto);
     }
 
+    @PreAuthorize("hasAnyRole('ROLE_CUSTOMER', 'ROLE_SPECIALIST', 'ROLE_MODERATOR')")
     @PutMapping("reservations/{id}")
     public ResponseEntity<ReservationDto> update(@PathVariable Long id,
                                                  @RequestBody UpdateReservationRequest request) {
@@ -67,6 +73,7 @@ public class ReservationController {
         return ResponseEntity.ok(reservationDto);
     }
 
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     @DeleteMapping(value = "/reservations/{id}")
     public ResponseEntity<?> delete(@PathVariable Long id) {
         reservationService.delete(id);

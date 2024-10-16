@@ -31,13 +31,13 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http,
-                                           Converter<Jwt, ? extends AbstractAuthenticationToken> jwtAuthenticationConverter) throws Exception {
+                                           Converter<Jwt, ? extends AbstractAuthenticationToken> jwtConverter) throws Exception {
         return http
                 .csrf(withDefaults())
-                .authorizeHttpRequests(request -> request.anyRequest().hasRole("ADMIN"))
+                .authorizeHttpRequests(request -> request.anyRequest().authenticated())
                 .sessionManagement(session -> session.sessionCreationPolicy(STATELESS))
                 .oauth2ResourceServer(oauth2 -> oauth2
-                        .jwt(jwt -> jwt.jwtAuthenticationConverter(jwtAuthenticationConverter)))
+                        .jwt(jwt -> jwt.jwtAuthenticationConverter(jwtConverter)))
                 .build();
     }
 
