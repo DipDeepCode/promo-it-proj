@@ -46,10 +46,13 @@ services:
     image: quay.io/keycloak/keycloak:25.0.5
     container_name: keycloak_container
     restart: unless-stopped
-    command: ["start-dev"]
+    command:
+      - "start-dev"
+      - --import-realm
     environment:
       KEYCLOAK_ADMIN: keycloak_user
       KEYCLOAK_ADMIN_PASSWORD: keycloak_pass
+      KEYCLOAK_IMPORT: /opt/jboss/keycloak/imports/PromoIT-realm.json -Dkeycloak.profile.feature.upload_scripts=enabled
       KC_HOSTNAME: keycloak
       KC_DB: postgres
       KC_DB_URL: jdbc:postgresql://db/keycloak_db
@@ -57,6 +60,8 @@ services:
       KC_DB_PASSWORD: keycloak_db_password
     ports:
       - "8080:8080"
+    volumes:
+      - ./PromoIT-realm.json:/opt/jboss/keycloak/imports/PromoIT-realm.json
     depends_on:
       - db
 
