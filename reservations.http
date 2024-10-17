@@ -1,0 +1,69 @@
+###
+# @name get bearer token
+# @no-log
+# @no-cookie-jar
+POST http://localhost:8080/realms/PromoIT/protocol/openid-connect/token
+Content-Type: application/x-www-form-urlencoded
+
+client_id = api-gateway &
+grant_type = password &
+scope = openid &
+username = admin &
+password = admin
+
+> {%
+    client.global.set("auth_token", response.body.access_token);
+%}
+
+###
+# @name create reservation
+# @no-log
+# @no-cookie-jar
+POST http://localhost:8081/consultations-service/api/v1/slots/3/reservations
+Authorization: Bearer {{auth_token}}
+Content-Type: application/json
+
+{
+  "clientId": "50ca932c-fbcc-4f82-8355-0d1f9f54e2d4"
+}
+
+###
+# @name get all reservations
+# @no-log
+# @no-cookie-jar
+GET http://localhost:8081/consultations-service/api/v1/reservations
+Authorization: Bearer {{auth_token}}
+
+###
+# @name get slot reservations
+# @no-log
+# @no-cookie-jar
+GET http://localhost:8081/consultations-service/api/v1/slots/3/reservations
+Authorization: Bearer {{auth_token}}
+Content-Type: application/json
+
+###
+# @name get reservation by id
+# @no-log
+# @no-cookie-jar
+GET http://localhost:8081/consultations-service/api/v1/reservations/1
+Authorization: Bearer {{auth_token}}
+
+###
+# @name update reservation
+# @no-log
+# @no-cookie-jar
+PUT http://localhost:8081/consultations-service/api/v1/reservations/1
+Authorization: Bearer {{auth_token}}
+Content-Type: application/json
+
+{
+  "status": "APPROVED"
+}
+
+###
+# @name delete reservation
+# @no-log
+# @no-cookie-jar
+DELETE http://localhost:8081/consultations-service/api/v1/reservations/1
+Authorization: Bearer {{auth_token}}

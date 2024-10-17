@@ -1,0 +1,116 @@
+###
+# @name get bearer token
+# @no-log
+# @no-cookie-jar
+POST http://localhost:8080/realms/PromoIT/protocol/openid-connect/token
+Content-Type: application/x-www-form-urlencoded
+
+client_id = rest_client &
+grant_type = password &
+username = ruler &
+password = ruler
+
+> {%
+    client.global.set("auth_token", response.body.access_token);
+%}
+
+###
+# @name create slot
+# @no-log
+# @no-cookie-jar
+POST http://localhost:8081/consultations-service/api/v1/slots
+Authorization: Bearer {{auth_token}}
+Content-Type: application/json
+
+{
+  "specialistId": "2dd35279-514f-47cc-9a28-11e44f165acf",
+  "beginAt": "2024-10-30T12:00:00",
+  "endAt": "2024-10-30T13:00:00",
+  "cost": 0.00,
+  "type": "type name",
+  "context": {
+    "key": "value"
+  }
+}
+
+###
+# @name get all slots
+# @no-log
+# @no-cookie-jar
+GET http://localhost:8081/consultations-service/api/v1/slots
+Authorization: Bearer {{auth_token}}
+
+###
+# @name get all for date
+# @no-log
+# @no-cookie-jar
+GET http://localhost:8081/consultations-service/api/v1/slots?date=2024-10-30
+Authorization: Bearer {{auth_token}}
+
+###
+# @name get all for dates
+# @no-log
+# @no-cookie-jar
+GET http://localhost:8081/consultations-service/api/v1/slots?date1=2024-10-28&date2=2024-10-31
+Authorization: Bearer {{auth_token}}
+
+###
+# @name get all slots by specialistId
+# @no-log
+# @no-cookie-jar
+GET http://localhost:8081/consultations-service/api/v1/specialist/1dd35279-514f-47cc-9a28-11e44f165acf/slots
+Authorization: Bearer {{auth_token}}
+
+###
+# @name get all slots by specialistId for date
+# @no-log
+# @no-cookie-jar
+GET http://localhost:8081/consultations-service/api/v1/specialist/1dd35279-514f-47cc-9a28-11e44f165acf/slots?date=2024-10-30
+Authorization: Bearer {{auth_token}}
+
+###
+# @name get all slots by specialistId for dates
+# @no-log
+# @no-cookie-jar
+GET http://localhost:8081/consultations-service/api/v1/specialist/2dd35279-514f-47cc-9a28-11e44f165acf/slots?date1=2024-10-28&date1=2024-10-30
+Authorization: Bearer {{auth_token}}
+
+###
+# @name get slot by id
+# @no-log
+# @no-cookie-jar
+GET http://localhost:8081/consultations-service/api/v1/slots/1
+Authorization: Bearer {{auth_token}}
+
+###
+# @name update slot dates
+# @no-log
+# @no-cookie-jar
+PUT http://localhost:8081/consultations-service/api/v1/slots/1
+Authorization: Bearer {{auth_token}}
+Content-Type: application/json
+
+{
+  "beginAt": "2024-10-30T14:00:00",
+  "endAt": "2024-10-30T15:00:00"
+}
+
+###
+# @name update slot status
+# @no-log
+# @no-cookie-jar
+PUT http://localhost:8081/consultations-service/api/v1/slots/2
+Authorization: Bearer {{auth_token}}
+Content-Type: application/json
+
+{
+  "status": "CLOSED"
+}
+
+###
+# @name delete slot
+# @no-log
+# @no-cookie-jar
+DELETE http://localhost:8081/consultations-service/api/v1/slots/2
+Authorization: Bearer {{auth_token}}
+Content-Type: application/json

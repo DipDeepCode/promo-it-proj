@@ -1,0 +1,72 @@
+package slot_rules
+
+import ru.ddc.consultationsservice.entity.Slot
+import ru.ddc.consultationsservice.rules.RuleResponse
+
+global ru.ddc.consultationsservice.rules.RuleResponse response
+
+dialect "mvel"
+
+rule "Allow create Slot" agenda-group "create"
+    when
+        Slot (status != null &&
+              createdAt != null &&
+              createdBy != null)
+    then
+        response.setAllowed(true);
+    end
+
+rule "Prohibit create Slot if status is null" agenda-group "create"
+    when
+        Slot (status == null)
+    then
+        response.setAllowed(false);
+        response.setReason("Status should not be null");
+    end
+
+rule "Prohibit create Slot if createdAt is null" agenda-group "create"
+    when
+        Slot (createdAt == null)
+    then
+        response.setAllowed(false);
+        response.setReason("CreatedAt should not be null");
+    end
+
+rule "Prohibit create Slot if createdBy is null" agenda-group "create"
+    when
+        Slot (createdBy == null)
+    then
+        response.setAllowed(false);
+        response.setReason("CreatedBy should not be null");
+    end
+
+rule "Allow update status if reservations is empty" agenda-group "update"
+    when
+        Slot (reservations.isEmpty())
+    then
+        response.setAllowed(true);
+    end
+
+rule "Prohibit update status if reservations is not empty" agenda-group "update"
+    when
+        Slot (!reservations.isEmpty())
+    then
+        response.setAllowed(false);
+        response.setReason("Slot should not have active reservations");
+    end
+
+rule "Allow delete Slot if status CLOSE" agenda-group "delete"
+    when
+        Slot (status.equals(Slot.Status.CLOSED))
+    then
+        response.setAllowed(true);
+    end
+
+rule "Prohibit delete Slot if status not CLOSED" agenda-group "delete"
+    when
+        Slot (status.equals(Slot.Status.OPEN))
+    then
+        response.setAllowed(false);
+        response.setReason("Slot should be in CLOSED status");
+    end
+

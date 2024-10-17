@@ -7,7 +7,7 @@ services:
       dockerfile: Dockerfile
     image: promo-it/api-gateway
     container_name: api-gateway_container
-    restart: always
+    restart: unless-stopped
     ports:
       - "8081:80"
     depends_on:
@@ -15,9 +15,9 @@ services:
       - keycloak
     environment:
       SERVER_PORT: 80
-      SPRING_CLOUD_GATEWAY_MVC_ROUTES[0]_ID: consultations
+      SPRING_CLOUD_GATEWAY_MVC_ROUTES[0]_ID: consultations-service
       SPRING_CLOUD_GATEWAY_MVC_ROUTES[0]_URI: http://consultations-service
-      SPRING_CLOUD_GATEWAY_MVC_ROUTES[0]_PREDICATES[0]: Path= /consultations/**
+      SPRING_CLOUD_GATEWAY_MVC_ROUTES[0]_PREDICATES[0]: Path= /consultations-service/**
       SPRING_CLOUD_GATEWAY_MVC_ROUTES[0]_FILTERS[0]: StripPrefix=1
       SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER-URI: http://keycloak:8080/realms/PromoIT
 
@@ -27,15 +27,16 @@ services:
       dockerfile: Dockerfile
     image: promo-it/consultations-service
     container_name: consultations-service_container
-    restart: always
+    restart: unless-stopped
+    ports:
+      - "8083:80"
     environment:
       SERVER_PORT: 80
       SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER-URI: http://keycloak:8080/realms/PromoIT
-      SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWK-SET-URI: http://keycloak:8080/realms/PromoIT/protocol/openid-connect/certs
       SPRING_DATASOURCE_URL: jdbc:postgresql://db/consultations_db
       SPRING_DATASOURCE_USERNAME: consultations_db_user
       SPRING_DATASOURCE_PASSWORD: consultations_db_password
-      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+      SPRING_JPA_HIBERNATE_DDL_AUTO: create-drop
       SPRING_JPA_OPEN-IN-VIEW: false
     depends_on:
       - db
@@ -44,10 +45,14 @@ services:
   keycloak:
     image: quay.io/keycloak/keycloak:25.0.5
     container_name: keycloak_container
-    command: ["start-dev"]
+    restart: unless-stopped
+    command:
+      - "start-dev"
+      - --import-realm
     environment:
       KEYCLOAK_ADMIN: keycloak_user
       KEYCLOAK_ADMIN_PASSWORD: keycloak_pass
+      KEYCLOAK_IMPORT: /opt/jboss/keycloak/imports/PromoIT-realm.json -Dkeycloak.profile.feature.upload_scripts=enabled
       KC_HOSTNAME: keycloak
       KC_DB: postgres
       KC_DB_URL: jdbc:postgresql://db/keycloak_db
@@ -55,13 +60,15 @@ services:
       KC_DB_PASSWORD: keycloak_db_password
     ports:
       - "8080:8080"
+    volumes:
+      - ./PromoIT-realm.json:/opt/jboss/keycloak/imports/PromoIT-realm.json
     depends_on:
       - db
 
   pgadmin:
     image: elestio/pgadmin
     container_name: pgadmin_container
-    restart: always
+    restart: unless-stopped
     environment:
       PGADMIN_DEFAULT_EMAIL: pgadmin_user@foo.bar
       PGADMIN_DEFAULT_PASSWORD: pgadmin_pass
@@ -77,7 +84,7 @@ services:
   db:
     image: postgres:16.2-alpine
     container_name: db_container
-    restart: always
+    restart: unless-stopped
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres_pass
